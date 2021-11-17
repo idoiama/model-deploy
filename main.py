@@ -9,7 +9,7 @@ import streamlit as st
  
 # loading the model
 path = ''
-modelname = path + '/toymodel.pkl'
+modelname ='toymodel.pkl'
 loaded_model = pickle.load(open(modelname, 'rb'))
 
  
