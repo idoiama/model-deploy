@@ -3,6 +3,7 @@ import streamlit as st
 import numpy as np
 import string
 import pickle
+import sklearn
 
 #loading our model
 model = pickle.load(open('new_model.pkl','rb'))
