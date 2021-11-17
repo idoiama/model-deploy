@@ -1,38 +1,109 @@
-#loading our libraries
-import streamlit as st
-import numpy as np
-import string
+###############################
+# This program lets you       #
+# - enter values in Streamlit #
+# - get prediction            #  
+###############################
 import pickle
-import sklearn
+import pandas as pd
+import streamlit as st
+ 
+# loading the model
+path = ''
+modelname = path + '/toymodel.pkl'
+loaded_model = pickle.load(open(modelname, 'rb'))
 
-#loading our model
-model = pickle.load(open('new_model.pkl','rb'))
-
-
-def main():
-  st.markdown("<h1 style='text-align: center; color: White;background-color:#e84343'>Graduate Admission Predictor</h1>", unsafe_allow_html=True)
-  st.markdown("<h3 style='text-align: center; color: Black;'>Drop in The required Inputs and we will do  the rest.</h3>", unsafe_allow_html=True)
-  st.markdown("<h4 style='text-align: center; color: Black;'>Submission for The Python Week</h4>", unsafe_allow_html=True)
-  st.sidebar.header("What is this Project about?")
-  st.sidebar.text("It a Web app that would help the user in determining whether they will get admission in a Graduate Program or not.")
-  st.sidebar.header("What tools where used to make this?")
-  st.sidebar.text("The Model was made using a dataset from Kaggle along with using Kaggle notebooks to train the model. We made use of Sci-Kit learn in order to make our Linear Regression Model.")
-
+ 
+      
+#############  
+# Main page #
+#############                
+st.write("The model prediction")     
   
-  #part of our main method
-  cgpa = st.slider("Input Your CGPA",0.0,10.0) #taking the cgpa by giving in the range from 0 to 10
-  gre = st.slider("Input your GRE Score",0,340) #taking the GRE by giving in the range from 0 to 340
-  toefl = st.slider("Input your TOEFL Score",0,120) #taking the TOEFL by giving in the range from 0 to 120
-  research = st.slider("Do You have Research Experience (0 = NO, 1 = YES)",0,1) #taking the input of whether or not a person has written a research paper
-  uni_rating = st.slider("Rating of the University you wish to get in on a Scale 1-5",1,5) #taking the rating of the university a person wishes to get in
+LIVINGAPARTMENTS_AVG_MIN = 0.0
+LIVINGAPARTMENTS_AVG_MAX = 1.0
+APARTMENTS_AVG_MIN = 0.0
+APARTMENTS_AVG_MAX = 0.11697126743049956
 
-  inputs = [[cgpa,gre,toefl,research,uni_rating]] #our inputs
+# Get input values - numeric variables
+LIVINGAPARTMENTS_AVG = st.slider('Please enter the living apartments:',
+                                 min_value = LIVINGAPARTMENTS_AVG_MIN,
+                                 max_value = LIVINGAPARTMENTS_AVG_MAX
+                                )
+APARTMENTS_AVG = st.slider('Please enter the apartment average:',
+                                 min_value = APARTMENTS_AVG_MIN,
+                                 max_value = APARTMENTS_AVG_MAX
+                                )
 
-  if st.button('Predict'): #making and printing our prediction
-    result = model.predict(inputs)
-    updated_res = result.flatten().astype(float)
-    st.success('The Probability of getting admission is {}'.format(updated_res))
+# Set dummy variables to zero    
+cat_list = ['Accountants', 'Cleaning_staff', 'Cooking_staff',
+       'Core_staff', 'Drivers', 'High_skill_tech_staff',
+       'Laborers', 'Managers', 'Medicine_staff',
+       'OTHER', 'Sales_staff', 'Security_staff']         
+for i in cat_list:
+       exec("%s = %d" % (i,0)) # The exec() command makes a value as the variable name
+               
 
+# Enter data for prediction 
+Occupation = st.selectbox('Please choose Your Occupation',
+                              ('Accountants',
+                               'Cleaning_staff',
+                               'Cooking_staff',
+                               'Core_staff', 
+                               'Drivers', 
+                               'High_skill_tech_staff',
+                               'Laborers', 
+                               'Managers', 
+                               'Medicine_staff',
+                               'Sales_staff', 
+                               'Security_staff',
+                               'OTHER')
+                             )
+               
+if Occupation=='Accountants':
+        Accountants =1
+elif Occupation=='Cleaning_staff':
+        Cleaning_staff =1
+elif Occupation=='Cooking_staff':
+        Cooking_staff =1
+elif Occupation=='Core_staff':
+        Core_staff =1
+elif Occupation=='Drivers':
+        Drivers =1
+elif Occupation=='High_skill_tech_staff':
+        High_skill_tech_staff =1
+elif Occupation=='Laborers':
+        Laborers =1
+elif Occupation=='Managers':
+        Managers =1
+elif Occupation=='Medicine_staff':
+        Medicine_staff =1
+elif Occupation=='Sales_staff':
+        Sales_staff =1
+elif Occupation=='Security_staff':
+        Security_staff =1
+else: 
+        OTHER =1
+               
+# when 'Predict' is clicked, make the prediction and store it 
+if st.button("Get Your Prediction"): 
+    
+    X = pd.DataFrame({'APARTMENTS_AVG':[APARTMENTS_AVG],
+                      'LIVINGAPARTMENTS_AVG':[LIVINGAPARTMENTS_AVG], 
+                      'Accountants':[Accountants], 
+                      'Cleaning_staff':[Cleaning_staff], 
+                      'Cooking_staff':[Cooking_staff],
+                      'Core_staff':[Core_staff],
+                      'Drivers':[Drivers], 
+                      'High_skill_tech_staff':[High_skill_tech_staff],
+                      'Laborers':[Laborers], 
+                      'Managers':[Managers], 
+                      'Medicine_staff':[Medicine_staff],
+                      'Sales_staff':[Sales_staff], 
+                      'Security_staff':[Security_staff],
+                      'OTHER':[OTHER] 
+                     })
+               
+    # Making predictions            
+    prediction = loaded_model.predict_proba(X)[:,1] # The model produces (p0,p1), we want p1.
 
-if __name__ =='__main__':
-  main() #calling the main method
+    st.success('Your Target is {}'.format(prediction))
