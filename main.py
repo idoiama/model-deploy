@@ -6,6 +6,7 @@
 import pickle
 import pandas as pd
 import streamlit as st
+import sklearn
  
 # loading the model
 path = ''
